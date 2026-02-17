@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Destination } from "@/lib/types";
 
 interface Props {
@@ -13,6 +13,37 @@ export function DestinationCard({ destination, score, onScoreChange }: Props) {
   const [imgError, setImgError] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = null;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+    if (Math.abs(diff) < minSwipeDistance) return;
+    if (diff > 0) {
+      // swipe left -> next
+      setCurrentImageIndex((prev) =>
+        prev === destination.imageUrls.length - 1 ? 0 : prev + 1
+      );
+    } else {
+      // swipe right -> prev
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? destination.imageUrls.length - 1 : prev - 1
+      );
+    }
+    touchStartX.current = null;
+    touchEndX.current = null;
+  }, [destination.imageUrls.length]);
 
   const scoreColor =
     score <= 3
@@ -41,7 +72,12 @@ export function DestinationCard({ destination, score, onScoreChange }: Props) {
   return (
     <div className="bg-white rounded-2xl shadow-lg overflow-hidden transition-shadow hover:shadow-xl">
       {/* Kép carousel */}
-      <div className="relative h-64 w-full group">
+      <div
+        className="relative h-64 w-full group"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         {!imgError && mainImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -64,14 +100,14 @@ export function DestinationCard({ destination, score, onScoreChange }: Props) {
           <>
             <button
               onClick={prevImage}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
               aria-label="Előző kép"
             >
               ‹
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
               aria-label="Következő kép"
             >
               ›

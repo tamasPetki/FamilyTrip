@@ -46,14 +46,23 @@ function VotingContent() {
     if (!member) return;
     setSubmitting(true);
     try {
-      await fetch("/api/votes", {
+      const res = await fetch("/api/votes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ familyMember: member, votes }),
       });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error("A szerver nem erősítette meg a mentést");
+      }
       router.push("/eredmenyek");
-    } catch {
-      alert("Hiba történt a szavazat mentésekor. Próbáld újra!");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Ismeretlen hiba";
+      alert(`Hiba történt a szavazat mentésekor: ${message}\nPróbáld újra!`);
       setSubmitting(false);
     }
   };
