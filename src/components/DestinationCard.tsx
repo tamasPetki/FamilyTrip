@@ -223,6 +223,24 @@ export function DestinationCard({ destination, score, onScoreChange }: Props) {
                 {destination.comparison}
               </p>
             </div>
+
+            {/* YouTube videó */}
+            {destination.youtubeVideoId && (
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 mb-2">
+                  🎬 Videó
+                </h4>
+                <div className="relative w-full rounded-xl overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    className="absolute inset-0 w-full h-full"
+                    src={`https://www.youtube.com/embed/${destination.youtubeVideoId}?rel=0`}
+                    title={`${destination.name} videó`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 

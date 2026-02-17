@@ -13,6 +13,7 @@ export interface Destination {
   imageAlts: string[];
   fallbackGradient: string;
   fallbackEmoji: string;
+  youtubeVideoId?: string;
 }
 
 export interface VoteSubmission {
